@@ -66,32 +66,32 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-  .post(
+  .post(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
+    res.statusCode = 403;
+    res.end(
+      `POST operation not supported on /partners/${req.params.partnerId}`
+    );
+  })
+  .put(
     cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
-    (req, res) => {
-      res.statusCode = 403;
-      res.end(
-        `POST operation not supported on /partners/${req.params.partnerId}`
-      );
+    (req, res, next) => {
+      Partner.findByIdAndUpdate(
+        req.params.partnerId,
+        {
+          $set: req.body,
+        },
+        { new: true }
+      )
+        .then((partner) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(partner);
+        })
+        .catch((err) => next(err));
     }
   )
-  .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-    Partner.findByIdAndUpdate(
-      req.params.partnerId,
-      {
-        $set: req.body,
-      },
-      { new: true }
-    )
-      .then((partner) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(partner);
-      })
-      .catch((err) => next(err));
-  })
   .delete(
     cors.corsWithOptions,
     authenticate.verifyUser,
